@@ -13,10 +13,10 @@ $eventObj=new Events($database->getConnection());
 <html xmlns="http://www.w3.org/1999/xhtml"  xml:lang="en" lang="en" dir="ltr">
 <head>
 <link href="css/style.css" rel="stylesheet" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/moment.min.js"></script>
+<script type="text/javascript" src="js/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/daterangepicker.css" />
 <script>
 $(function() {
 
