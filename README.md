@@ -13,7 +13,7 @@ STEP #1:
 4) If step 3 done(Application installation) then point your browser to below path.
 http://localhost/sportradar/index.php
 
-4) Mysql database
+5) Mysql database
 URL: http://localhost:9191/
   Server:mysql
   user:root
@@ -25,8 +25,9 @@ STEP #2:
 1) I believe you have downloaded code from Github.
 2) Install LAMP, XAMP and phpmyadmin in your computer.
 3) Put downloaded code inside XAMP or LAMP httdocs folder
-4) Import sportradar database (take from Path:sportradar/Document/DB/sportradar.sql)
-5) Change DB credentials in config file. path:sportradar/public_html/sportradar/api/config/config.php
-5) Then point your browser to http://localhost/sportradar/index.php
-4) Mysql database
+4) Create sportradar database in MySQL
+5) Import in mysql sportradar database (take from Path:sportradar/Documents/DB/sportradar.sql)
+6) Change DB credentials in config file. path:sportradar/public_html/sportradar/api/config/config.php
+7) Then point your browser to http://localhost/sportradar/index.php
+8) Mysql database
    URL: http://localhost/phpmyadmin
