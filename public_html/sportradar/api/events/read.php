@@ -9,33 +9,32 @@ include_once '../config/database.php';
 include_once '../objects/events.php';
 require_once('../../includes/reusefunctions.php');
 
-// instantiate database and event object
+//echo "<pre>";print_r($_POST,0);die;
 try {
-
-  //echo "<pre>";print_r($_POST,0),die;
-
+      // instantiate database and event object
       $database = new Database();
       $db = $database->getConnection();
 
-      // filter input
+      // filter/clean input(s)
       $cleanInput= new ResuseFunctions();
 
-      // initialize object
+      // initialize event class object
       $eventObj = new Events($db);
-      //Accept parametersCheck validatin
+
+      //check API parameters validatin
       if(!$eventObj->parametersCheck($cleanInput->_request))
       {
         // set response code
-        http_response_code(200);
+        http_response_code(400);
 
-        // tell the user no sessions found
+        // tell the user this bad request
         echo json_encode(
             array("message" => "Invalid API parameters")
         );
         exit;
       }
 
-      // query events
+      // prin event(s) calendar
       echo $eventObj->eventLists($cleanInput->_request);
       exit;
 

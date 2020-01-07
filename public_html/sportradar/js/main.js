@@ -1,12 +1,14 @@
 $(document).ready(function () {
 
+//sportfilter function will get called on Submit event
   $('#sportfilter').submit(function(e) {
         e.preventDefault();
         var form = $(this);
         var oneFilled = checkFields(form);
-        ///alert(oneFilled);
+        ///User should select at least one field for filter
         if(oneFilled==true)
         {
+          //Ajax call to pull requested data from API
           $.ajax({
               url: "api/events/read.php",
               data: form.serialize(),
@@ -16,6 +18,7 @@ $(document).ready(function () {
                 $('div.table-responsive').html(data);
               },
               error: function(xhr, status, error){
+                //If API return error then it will display to user
                  var errorMessage = xhr.status + ': ' + xhr.statusText
                  alert('Error - ' + errorMessage);
              }
@@ -29,27 +32,7 @@ $(document).ready(function () {
 
 });
 
-function fetchData()
-{
-  var formdata=$("#sportfilter").serialize();
-  //var $form = $(this).closest("form").attr('id');
-  //var oneFilled = checkFields(formdata);
-  alert($(this).closest("form").attr('id'));
-  $.ajax({
-      url: "api/events/read.php",
-      data: formdata,
-      dataType: "json",
-      type: "POST",
-      success: function (data) {
-        $('div.table-responsive').html(data);
-      },
-      error: function(xhr, status, error){
-         var errorMessage = xhr.status + ': ' + xhr.statusText
-         alert('Error - ' + errorMessage);
-     }
-
-  });
-}
+//Below function return true or false on basis of fields are filled or not
 function checkFields(form) {
         inputs = form.find(':input').not('[type="submit"],[type="button"],[type="reset"]'),
         filled = inputs.filter(function(){

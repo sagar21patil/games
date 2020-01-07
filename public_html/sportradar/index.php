@@ -13,68 +13,44 @@ $eventObj=new Events($database->getConnection());
 <html xmlns="http://www.w3.org/1999/xhtml"  xml:lang="en" lang="en" dir="ltr">
 <head>
 <link href="css/style.css" rel="stylesheet" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<script>
+$(function() {
 
+  $('input[name="start_date"]').daterangepicker({
+      autoUpdateInput: false,
+      locale: {
+          cancelLabel: 'Clear'
+      }
+  });
+
+  $('input[name="start_date"]').on('apply.daterangepicker', function(ev, picker) {
+      $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+  });
+    });
+</script>
 </head>
 <body>
 <div id="header"> <!--<a href="https://www.sportradar.com/" target="_blank">-->
   <img src="images/header.png" alt="Topend Sports, science, training and nutrition " style="height:295px"></div>
 <!-- #EndLibraryItem --><div id="container">
-  <div id="content"> 
+  <div id="content">
 
 <h1>2020  World Sporting Event Calendar</h1>
 <p>Here is a list of the major sporting events for the year 2019. Not every sporting event can be listed here, though we have tried to include all the <strong>significant sporting events</strong> of the <strong>major sports</strong>, mostly the <strong>international competitions</strong>.</p>
 <form id="sportfilter" name="sportfilter" method="post">
-  <select name="_sport_id" id="_sport_id">
-    <option value="">Sport</option>
-    <?php
-      if(!empty($filterValues['sports']))
-      {
-        foreach($filterValues['sports'] as $sport)
-        {
-          echo "<option value=".$sport['sport_id'].">".$sport['sport_name']."</option>";
-        }
-      }
-    ?>
-  </select>
-<select name="_team_ida" id="_team_ida">
-  <option value="">Team A</option>
   <?php
-    if(!empty($filterValues['teams']))
-    {
-      foreach($filterValues['teams'] as $team)
-      {
-        echo "<option value=".$team['team_id'].">".$team['team_name']."</option>";
-      }
-    }
+        echo $filterValues['sportsInput'];
+        echo $filterValues['teamsInput'];
+        echo $filterValues['locationsInput'];
   ?>
-</select>&nbsp;vs&nbsp;
-<select name="_team_idb" id="_team_idb">
-  <option value=""> Team B</option>
-  <?php
-    if(!empty($filterValues['teams']))
-    {
-      foreach($filterValues['teams'] as $team)
-      {
-        echo "<option value=".$team['team_id'].">".$team['team_name']."</option>";
-      }
-    }
-  ?>
-</select>
-<select name="_location_id" id="_location_id">
-  <option value=""> Location</option>
-  <?php
-    if(!empty($filterValues['locations']))
-    {
-      foreach($filterValues['locations'] as $location)
-      {
-        echo "<option value=".$location['location_id'].">".$location['location_name']."</option>";
-      }
-    }
-  ?>
-</select>
+
 <div class="clearfix"><br/></div>
 <select name="event_status" id="event_status">
-  <option value=""> Game Status</option>
+  <option value="">--Game Status--</option>
   <option value="Abandoned">Abandoned</option>
   <option value="Cancelled">Cancelled</option>
   <option value="Delayed">Delayed </option>
@@ -86,14 +62,17 @@ $eventObj=new Events($database->getConnection());
   <option value="Postponed">Postponed</option>
   <option value="Suspended">Suspended</option>
 </select>
+<span style="font-family:Verdana, Geneva, sans-serif;font-size:0.9em;line-height:1.8em">Date:</span><input type="text" name="start_date"  value="" />
 <div class="buttons">
-<button class="btn btn-primary" name="Reset" id="Reset" type="reset" > Reset</button>&nbsp;&nbsp;
-<button class="btn btn-primary" name="submit" id="submit" type="submit" > Submit</button>&nbsp;&nbsp;
+<button class="btn btn-primary" name="Reset" id="Reset" type="reset" > Reset</button>&nbsp;
+<button class="btn btn-primary" name="submit" id="submit" type="submit" > Submit</button>&nbsp;
 </div>
 </form>
 <div class="clearfix"></div>
     <div class="table-responsive">
-<?php  echo json_decode($eventObj->eventLists()); ?>
+<?php
+//Load default events on first time page load
+echo json_decode($eventObj->eventLists()); ?>
 </div>
 
 </div>
@@ -111,7 +90,7 @@ $eventObj=new Events($database->getConnection());
       {
         foreach($filterValues['sports'] as $sport)
         {
-          echo "<li>".$sport['sport_name']."</li>";
+          echo "<li>".$sport['name']."</li>";
         }
       }
     ?>
@@ -139,6 +118,5 @@ $eventObj=new Events($database->getConnection());
 <div id="footer-ad" align="center">
 
 </div>
-	<script src="js/jquery.min.js"></script>
   <script src="js/main.js"></script>
 </body></html>

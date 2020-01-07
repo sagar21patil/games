@@ -12,158 +12,74 @@ class Filter extends ResuseFunctions
       $this->conn = $database->getConnection();
     }
 
-    public function getAllSportList()
-    {
-      try{
-            $sportList=array();
-            $query="SELECT sport_id, sport_name
-                          FROM sports
-                          WHERE status='active'
-                          ORDER BY sport_name ASC";
 
-            $result = mysqli_query($this->conn,$query);
-            while ($row = $result->fetch_assoc()){
-              $sportList[]=$row;
-            }
-            //echo "sagar<pre>";print_r($sportList,0);die;
-            return $sportList;
-          }catch (Exception $e) {
-          // Error Exception print
-            echo  'Caught exception: '. $e->getMessage();
-          }
-    }
-
-    public function getALLTeamsList()
-    {
-      try{
-            $teamsList=array();
-            $query="SELECT team.team_id, team.team_name
-                          FROM teams as team
-                          INNER JOIN leagues as league ON league.league_id=team._league_id
-                          INNER JOIN sports as sport ON sport.sport_id=league._sport_id
-                          WHERE sport.status='active' AND league.league_status='active' AND team.team_status='active'
-                          ORDER BY team.team_name ASC";
-
-            $result = mysqli_query($this->conn,$query);
-            while ($row = $result->fetch_assoc()){
-              $teamsList[]=$row;
-            }
-            return $teamsList;
-          }catch (Exception $e) {
-            // Error Exception print
-            echo  'Caught exception: '. $e->getMessage();
-          }
-        //echo "sagar<pre>";print_r($sportList,0);die;
-    }
-    public function getLocationsList()
-    {
-      try{
-            $locationList=array();
-            $query="SELECT location_id, concat(IFNULL(city,''),', ',IFNULL(country,'')) as location_name
-                          FROM locations
-                          WHERE location_status='active'
-                          ORDER BY city ASC";
-
-            $result = mysqli_query($this->conn,$query);
-            while ($row = $result->fetch_assoc()){
-              $locationList[]=$row;
-            }
-            //echo "sagar<pre>";print_r($sportList,0);die;
-            return $locationList;
-          }catch (Exception $e) {
-          // Error Exception print
-            echo  'Caught exception: '. $e->getMessage();
-          }
-    }
     public function getFilterFieldsValues()
     {
-      $filterValues['sports']=$this->getAllSportList();
-      $filterValues['teams']=$this->getALLTeamsList();
-      $filterValues['locations']=$this->getLocationsList();
-      $filterValues['leagues']=$this->getLeaguesList();
+      //To fetch all active sport list
+      $sportsQuery="SELECT sport_id as id, sport_name as name
+                    FROM sports
+                    WHERE status='active'
+                    ORDER BY sport_name ASC";
+      //To fetch all active Leagues list
+      $leaguesQuery="SELECT league_id, league_short_name,league_full_name
+                    FROM leagues INNER JOIN sports as sport ON sport.sport_id=leagues._sport_id
+                    WHERE league_status='active' AND sport.status='active'
+                    ORDER BY league_short_name ASC";
+      //To fetch all active teams list
+      $teamsQuery="SELECT team.team_id as id, team.team_name as name
+                    FROM teams as team
+                    INNER JOIN leagues as league ON league.league_id=team._league_id
+                    INNER JOIN sports as sport ON sport.sport_id=league._sport_id
+                    WHERE sport.status='active' AND league.league_status='active' AND team.team_status='active'
+                    ORDER BY team.team_name ASC";
+      //To fetch all active locations list
+      $locationsQuery="SELECT location_id as id, concat(IFNULL(city,''),', ',IFNULL(country,'')) as name
+                     FROM locations
+                     WHERE location_status='active'
+                     ORDER BY city ASC";
+
+      $filterValues['sportsInput']=$this->getHTMLDropDown("_sport_id","--Sport--",$sportsQuery);
+      $filterValues['teamsInput']=$this->getHTMLDropDown("_team_ida","--Team--",$teamsQuery)."&nbsp;vs".$this->getHTMLDropDown("_team_idb","--Team--",$teamsQuery);
+      $filterValues['locationsInput']=$this->getHTMLDropDown("_location_id","--Location--",$locationsQuery);
+
+      //righthand side panel values to main page
+      $filterValues['leagues']=$this->getRowQueryResults($leaguesQuery);
+      $filterValues['sports']=$this->getRowQueryResults($sportsQuery);
+
+      //retun dropdowns and righthand side panel values to main page
       return $filterValues;
     }
-    public function getLeaguesList()
+
+    //Get all record(s) list by passing custom query
+    public function getRowQueryResults($query)
     {
       try{
-            $leaguesList=array();
-            $query="SELECT league_id, league_short_name,league_full_name
-                          FROM leagues
-                          INNER JOIN sports as sport ON sport.sport_id=leagues._sport_id
-                          WHERE league_status='active' AND sport.status='active'
-                          ORDER BY league_short_name ASC";
-
+            $dropdownList=array();
             $result = mysqli_query($this->conn,$query);
             while ($row = $result->fetch_assoc()){
-              $leaguesList[]=$row;
+              $dropdownList[]=$row;
             }
-            //echo "sagar<pre>";print_r($sportList,0);die;
-            return $leaguesList;
+              return $dropdownList;
           }catch (Exception $e) {
           // Error Exception print
             echo  'Caught exception: '. $e->getMessage();
           }
     }
-    public function getEventList()
+    //get generated HTML dropdownList with dynamic values by passing query
+    public function getHTMLDropDown($inputName,$emptyOption,$query)
     {
-        $return_message['login_success'] = false;
-        $return_message['error'] = '';
-        $return_message['is_error'] = 0;
-        $is_validation_error='';
-        //Server side validation
-        if(empty($this->_request['user_name']) && empty($this->_request['password'])){
-            $return_message['is_error'] = 1;
-            return $return_message['error'] = 'Please enter login credentials.';
+      try{
+        $result = mysqli_query($this->conn,$query);
+        $html="&nbsp;<select name='".$inputName."' id='".$inputName."'><option value=''>".$emptyOption."</option>";
+        $options="";
+        while ($row = $result->fetch_assoc()){
+          $options.="<option value=".$row['id'].">".$row['name']."</option>";
         }
-        else if(empty($this->_request['user_name']))
-        {
-            $return_message['is_error'] = 1;
-            return $return_message['error'] = 'Please enter a Username.';
-        }else if(empty($this->_request['password'])){
-            $return_message['is_error'] = 1;
-            return $return_message['error'] = 'Please enter password.';
+          return $html.$options."</select>";
+        }catch (Exception $e) {
+        // Error Exception print
+          echo  'Caught exception: '. $e->getMessage();
         }
-
-        try{
-
-      				// instantiate database
-      				$database = new Database();
-      				$this->conn = $database->getConnection();
-
-      			  $query = "SELECT user_id,user_name,status,user_type
-      				FROM users WHERE user_name='".$this->_request['user_name']."' AND password='".sha1($this->_request['password'])."' AND status=0 LIMIT 0,1";
-      				// prepare query statement
-      		    $result = $this->conn->query($query);
-
-      		    // execute query
-      				$resultArray=array();
-
-      				while ($row = mysqli_fetch_assoc($result)){
-      					$resultArray=$row;
-      				}
-
-              if(!empty($resultArray)){
-                      //Set loggedin user's session
-                      $_SESSION['userID'] = $resultArray['user_id'];
-                      $_SESSION['alogin'] = ucfirst($resultArray['user_name']);
-                      $_SESSION['status'] = $resultArray['status'];
-                      $_SESSION['is_admin'] = $resultArray['user_type']; //Admin=1, Normal User=0
-                      $return_message['is_error'] = 0;
-                      $return_message['login_success'] = true;
-                      $return_message['redirection_file'] = 'graph.php';
-              }else{
-                  $return_message['is_error'] = 1;
-                  $_SESSION['error'] = 'Invalid login credentials.';
-              }
-        }catch(Exception $e)
-        {
-          $return_message['is_error'] = 1;
-          $_SESSION['error'] = 'Caught exception: '. $e->getMessage();
-        }
-
-        return $return_message;
     }
-
-
 }
 ?>

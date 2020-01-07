@@ -19,22 +19,33 @@ class Events
           {
             if($v<>'')
             {
-              $whereCondition[]="".$k."='".$v."'";
+              //Generate where condition from user selected fields from filter
+              if($k=='start_date'){
+                $date="'".str_replace(' - ',"' AND '",$v)."'";
+                $whereCondition[]="(DATE_FORMAT(start_time,'%m/%d/%Y') BETWEEN ".$date.")";
+              }else{
+                $whereCondition[]="".$k."='".$v."'";
+              }
             }
+
+
           }
           //If user select other fields except game status field then show present and feature games only
-          if(!$searchParams['event_status']<>'')
+          if(!$searchParams['event_status']<>'' && $searchParams['start_date']=='')
             {
               $timeClause=" AND end_time>=now() ";
             }
           $extraConditions=$timeClause." AND ".implode(" AND ",$whereCondition);
         }else{
-          //Without filter show present and feature games only
+
+          //first page load show present and feature games only (Without filter)
           $extraConditions=" AND end_time>=now() ";;
         }
-        $searchQuery="SELECT sport.sport_name,start_time,event_status,concat(IFNULL(team.team_name,''),' - ',IFNULL(team1.team_name,'')) as game_between_teams, concat(IFNULL(location.city,''),', ',IFNULL(location.country,'')) as location_name
+
+        //This is simple query to show event(s) calendar to user
+          $searchQuery="SELECT sport.sport_name,start_time,event_status,concat(IFNULL(team.team_name,''),' - ',IFNULL(team1.team_name,'')) as game_between_teams, concat(IFNULL(location.city,''),', ',IFNULL(location.country,'')) as location_name
 					          FROM events
-                    INNER JOIN sports as sport ON sport.sport_id=events.event_id
+                    INNER JOIN sports as sport ON sport.sport_id=events._sport_id
                     INNER JOIN teams as team ON team.team_id=events._team_ida
                     INNER JOIN teams as team1 ON team1.team_id=events._team_idb
                     INNER JOIN locations as location ON events._location_id=location.location_id
@@ -48,6 +59,7 @@ class Events
       return $result;
     }
 
+    //To get eventlist to show as filter result
     public function eventLists($searchParams=null)
     {
       // query events
@@ -59,42 +71,44 @@ class Events
           // set response code - 200 OK
           http_response_code(200);
 
-          // show session data in json format
-          return json_encode($this->buildHTML($eventResults));
+          // show event(s) data
+          return json_encode($this->buildHTMLTable($eventResults));
       }else{
 
           // set response code - 404 Not found
           http_response_code(200);
 
-          // tell the user no sessions found
-          return json_encode($this->buildHTML(""));
+          // tell the user no event(s) found
+          return json_encode($this->buildHTMLTable(""));
       }
     }
 
-   public function buildHTML($result)
+   //To build HTML sport event Calendar
+   public function buildHTMLTable($result)
     {
-      $htmlTable="<table class='list'><tr><th>Date(s)</th><th>Sport</th><th>Teams</th><th>Location</th></tr>";
+      $htmlTable="<table class='list'><tr><th>Date(s)</th><th>Sport</th><th>Teams</th><th>Location</th><th>Status</th></tr>";
       if(!empty($result))
       {
           $rowtr="";
           while($row = $result->fetch_assoc()) {
-              $rowtr.="<tr><td>".date('D, d.m.Y, H:i', strtotime($row['start_time']))."</td><td>".$row['sport_name']."</td><td>".$row['game_between_teams']."</td><td>".$row['location_name']."</td></tr>";
+              $rowtr.="<tr><td>".date('D, d.m.Y, H:i', strtotime($row['start_time']))."</td><td>".$row['sport_name']."</td><td>".$row['game_between_teams']."</td><td>".$row['location_name']."</td><td>".$row['event_status']."</td></tr>";
           }
 
            $result -> free_result();
            $htmlTable.=$rowtr."</table>";
       }else{
-          $htmlTable.="<tr><td colspan=4>No event(s) found.</td></tr></table>";
+          $htmlTable.="<tr><td colspan=4 style='color:red'>No event(s) found.</td></tr></table>";
       }
       return $htmlTable;
     }
 
+    //To check API parameters are correct or not
     public function parametersCheck($parameters){
-      $valid_parameters=array('_sport_id','_team_ida','_team_idb','_location_id','event_status');
+      $valid_parameters=array('_sport_id','_team_ida','_team_idb','_location_id','event_status','start_date');
       $api_parameters=@array_keys($parameters);
       $parametersCount=count(@array_diff($valid_parameters,$api_parameters));
 
-        if(count($api_parameters)>5 || $_SERVER['REQUEST_METHOD']!='POST' || $parametersCount>=1)
+        if(count($api_parameters)>6 || $_SERVER['REQUEST_METHOD']!='POST' || $parametersCount>=1)
         {
           return false;
         }
